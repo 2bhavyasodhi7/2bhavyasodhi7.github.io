@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VoyageFlow - Interactive Travel Experience Simulator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/typed.js/2.0.12/typed.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/css/splide.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600&family=Dancing+Script:wght@400;700&display=swap" rel="stylesheet">
+   
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --secondary: #f97316;
+            --accent: #10b981;
+            --neutral: #6b7280;
+            --background: #fefdf8;
+        }
+       
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #fefdf8 0%, #f0f9ff 100%);
+            min-height: 100vh;
+        }
+       
+        .font-display { font-family: 'Playfair Display', serif; }
+        .font-script { font-family: 'Dancing Script', cursive; }
+       
+        .page-container {
+            display: none;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+       
+        .page-container.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+            animation: fadeInUp 0.6s ease-out;
+        }
+       
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+       
+        .hero-bg {
+            background: linear-gradient(rgba(30, 58, 138, 0.1), rgba(30, 58, 138, 0.2)), url('https://wallpaperaccess.com/full/3434639.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+       
+        .glass-nav {
+            backdrop-filter: blur(10px);
+            background: rgba(254, 253, 248, 0.9);
+            border-bottom: 1px solid rgba(30, 58, 138, 0.1);
+        }
+       
+        .form-input {
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+       
+        .form-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+            transform: translateY(-2px);
+        }
+       
+        .form-input.error {
+            border-color: #ef4444;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+        }
+       
+        .form-input.valid {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+       
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), #3b82f6);
+            transition: all 0.3s ease;
+        }
+       
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(30, 58, 138, 0.3);
+        }
+       
+        .btn-secondary {
+            background: linear-gradient(135deg, var(--secondary), #fb923c);
+            transition: all 0.3s ease;
+        }
+       
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(249, 115, 22, 0.3);
+        }
+       
+        .destination-card {
+            transition: all 0.4s ease;
+            overflow: hidden;
+        }
+       
+        .destination-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+       
+        .destination-card img {
+            transition: transform 0.4s ease;
+        }
+       
+        .destination-card:hover img {
+            transform: scale(1.1);
+        }
+       
+        .price-option {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background: transparent;
+        }
+       
+        .price-option:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+       
+        .price-option.selected {
+            background: transparent;
+            border-color: var(--primary);
+            color: inherit;
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(30, 58, 138, 0.3);
+        }
+       
+        /* NEW: Checkbox indicator for multi-select - ENHANCED VISIBILITY */
+        .price-option[data-category="food"]::before,
+        .price-option[data-category="activities"]::before {
+            content: '☐';
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.5rem;
+            color: var(--neutral);
+            transition: all 0.3s ease;
+            font-weight: bold;
+            pointer-events: none; /* Prevent checkbox from blocking clicks */
+        }
+       
+        .price-option[data-category="food"].selected::before,
+        .price-option[data-category="activities"].selected::before {
+            content: '☑';
+            color: var(--primary);
+            font-size: 1.5rem;
+        }
+       
+        .price-option[data-category="food"],
+        .price-option[data-category="activities"] {
+            position: relative;
+            padding-left: 50px;
+        }
+       
+        .modal {
+            backdrop-filter: blur(10px);
+            background: rgba(0, 0, 0, 0.5);
+        }
+       
+        .modal-content {
+            animation: modalSlideIn 0.4s ease-out;
+        }
+       
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8) translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+       
+        .sticky-nav {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+       
+        .nav-link {
+            transition: all 0.3s ease;
+            position: relative;
+        }
+       
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--secondary);
+            transition: width 0.3s ease;
+        }
+       
+        .nav-link:hover::after,
+        .nav-link.active::after {
+            width: 100%;
+        }
+       
+        .scroll-indicator {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: rgba(30, 58, 138, 0.1);
+            z-index: 100;
+        }
+       
+        .scroll-progress {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            width: 0%;
+            transition: width 0.1s ease;
+        }
+       
+        .confetti-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+       
+        .floating-element {
+            animation: float 6s ease-in-out infinite;
+        }
+       
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+       
+        .gradient-text {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+       
+        .error-message {
+            color: #ef4444;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+        }
+       
+        .error-message.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+       
+        .success-message {
+            color: var(--accent);
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+        }
+       
+        .success-message.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <!-- Scroll Progress Indicator -->
+    <div class="scroll-indicator">
+        <div class="scroll-progress" id="scrollProgress"></div>
+    </div>
+    <!-- Navigation -->
+    <nav class="glass-nav sticky-nav" id="mainNav">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <h1 class="font-display text-2xl font-bold gradient-text">VoyageFlow</h1>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-8" id="navLinks">
+                        <a href="#page-1" class="nav-link text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium" data-page="page-1">Register</a>
+                        <a href="#page-2" class="nav-link text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium" data-page="page-2">Destinations</a>
+                        <a href="#page-3" class="nav-link text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium" data-page="page-3">Calculator</a>
+                        <a href="#page-4" class="nav-link text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium" data-page="page-4">Complete</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <!-- Page 1: User Registration Form -->
+    <div id="page-1" class="page-container active">
+        <section class="hero-bg min-h-screen flex items-center justify-center relative overflow-hidden">
+            <div class="floating-element absolute top-20 left-10 text-6xl opacity-10">✈</div>
+            <div class="floating-element absolute top-40 right-20 text-4xl opacity-10" style="animation-delay: -2s;">🌍</div>
+            <div class="floating-element absolute bottom-40 left-20 text-5xl opacity-10" style="animation-delay: -4s;">🗺</div>
+           
+            <div class="max-w-md w-full mx-4">
+                <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-2xl p-8">
+                    <div class="text-center mb-8">
+                        <h2 class="font-display text-4xl font-bold gradient-text mb-4">Begin Your Journey</h2>
+                        <p class="text-gray-600">Create your account to explore the world</p>
+                    </div>
+                   
+                    <form id="registrationForm" class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                            <input type="text" id="fullName" class="form-input w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none" placeholder="Enter your full name" required>
+                            <div class="error-message" id="fullNameError"></div>
+                        </div>
+                       
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                            <input type="email" id="email" class="form-input w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none" placeholder="your@email.com" required>
+                            <div class="error-message" id="emailError"></div>
+                        </div>
+                       
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                            <input type="tel" id="phone" class="form-input w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none" placeholder="1234567890" maxlength="10" required>
+                            <div class="error-message" id="phoneError"></div>
+                            <div class="success-message" id="phoneSuccess">✓ Valid phone number</div>
+                        </div>
+                       
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">PIN Code</label>
+                            <input type="password" id="pin" class="form-input w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none" placeholder="123456" maxlength="6" required>
+                            <div class="error-message" id="pinError"></div>
+                            <div class="success-message" id="pinSuccess">✓ Valid PIN code</div>
+                        </div>
+                       
+                        <button type="submit" id="submitBtn" class="btn-primary w-full py-3 px-6 text-white font-semibold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                            Start Your Adventure
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </div>
+    <!-- Page 2: Travel Blog & Destination Showcase -->
+    <div id="page-2" class="page-container">
+        <!-- Sticky Navigation -->
+        <div class="sticky-nav glass-nav">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-center space-x-8 py-4">
+                    <a href="#paris" class="nav-link text-sm font-medium text-gray-700 hover:text-blue-600">Paris</a>
+                    <a href="#tokyo" class="nav-link text-sm font-medium text-gray-700 hover:text-blue-600">Tokyo</a>
+                    <a href="#rome" class="nav-link text-sm font-medium text-gray-700 hover:text-blue-600">Rome</a>
+                    <a href="#bali" class="nav-link text-sm font-medium text-gray-700 hover:text-blue-600">Bali</a>
+                    <a href="#newyork" class="nav-link text-sm font-medium text-gray-700 hover:text-blue-600">New York</a>
+                </div>
+            </div>
+        </div>
+        <!-- Hero Section -->
+        <section class="py-20 bg-gradient-to-br from-blue-50 to-orange-50">
+            <div class="max-w-4xl mx-auto text-center px-4">
+                <h2 class="font-display text-5xl font-bold gradient-text mb-6">Discover Amazing Destinations</h2>
+                <p class="text-xl text-gray-600 mb-8">Explore the world's most captivating cities and create unforgettable memories</p>
+                <div class="w-32 h-1 bg-gradient-to-r from-blue-600 to-orange-500 mx-auto rounded-full"></div>
+            </div>
+        </section>
+        <!-- Paris Section -->
+        <section id="paris" class="py-20 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                    <div>
+                        <img src="https://wallpaperaccess.com/full/296540.jpg" alt="Paris Eiffel Tower" class="w-full h-96 object-cover rounded-2xl shadow-lg">
+                    </div>
+                    <div class="destination-card bg-white p-8 rounded-2xl shadow-lg">
+                        <h3 class="font-display text-4xl font-bold text-gray-800 mb-4">Paris, France</h3>
+                        <p class="text-gray-600 mb-6 leading-relaxed">Experience the City of Light in all its glory. From the iconic Eiffel Tower to the world-renowned Louvre Museum, Paris offers an unparalleled blend of art, culture, and romance. Stroll along the Seine, indulge in exquisite French cuisine, and immerse yourself in the timeless elegance that has captivated visitors for centuries.</p>
+                        <div class="flex flex-wrap gap-3 mb-6">
+                            <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">Eiffel Tower</span>
+                            <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">Louvre Museum</span>
+                            <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">French Cuisine</span>
+                            <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">Seine Cruise</span>
+                        </div>
+                        <button class="btn-primary px-6 py-3 text-white rounded-lg font-semibold">Explore Paris</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- Tokyo Section -->
+        <section id="tokyo" class="py-20 bg-gray-50">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                    <div class="destination-card bg-white p-8 rounded-2xl shadow-lg order-2 lg:order-1">
+                        <h3 class="font-display text-4xl font-bold text-gray-800 mb-4">Tokyo, Japan</h3>
+                        <p class="text-gray-600 mb-6 leading-relaxed">Discover the perfect harmony of ancient tradition and cutting-edge technology. Experience the energy of Shibuya Crossing, find tranquility in cherry blossom season, and savor world-class sushi. Tokyo offers a unique journey through time where futuristic skyscrapers stand beside historic temples.</p>
+                        <div class="flex flex-wrap gap-3 mb-6">
+                            <span class="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm">Shibuya Crossing</span>
+                            <span class="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm">Cherry Blossoms</span>
+                            <span class="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm">Sushi</span>
+                            <span class="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm">Temples</span>
+                        </div>
+                        <button class="btn-secondary px-6 py-3 text-white rounded-lg font-semibold">Discover Tokyo</button>
+                    </div>
+                    <div class="order-1 lg:order-2">
+                        <img src="https://wallpaperaccess.com/full/44159.jpg" alt="Tokyo Shibuya Crossing" class="w-full h-96 object-cover rounded-2xl shadow-lg">
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- Rome Section -->
+        <section id="rome" class="py-20 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                    <div>
+                        <img src="https://wallpaperaccess.com/full/3237534.jpg" alt="Rome Colosseum" class="w-full h-96 object-cover rounded-2xl shadow-lg">
+                    </div>
+                    <div class="destination-card bg-white p-8 rounded-2xl shadow-lg">
+                        <h3 class="font-display text-4xl font-bold text-gray-800 mb-4">Rome, Italy</h3>
+                        <p class="text-gray-600 mb-6 leading-relaxed">Step into the eternal city where history comes alive at every corner. Marvel at the Colosseum's grandeur, explore the Vatican's treasures, and indulge in authentic Italian cuisine. Rome offers an immersive journey through 3,000 years of civilization, art, and culinary excellence.</p>
+                        <div class="flex flex-wrap gap-3 mb-6">
+                            <span class="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm">Colosseum</span>
+                            <span class="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm">Vatican</span>
+                            <span class="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm">Italian Cuisine</span>
+                            <span class="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm">Ancient History</span>
+                        </div>
+                        <button class="btn-primary px-6 py-3 text-white rounded-lg font-semibold">Experience Rome</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- Bali Section -->
+        <section id="bali" class="py-20 bg-gray-50">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                    <div class="destination-card bg-white p-8 rounded-2xl shadow-lg order-2 lg:order-1">
+                        <h3 class="font-display text-4xl font-bold text-gray-800 mb-4">Bali, Indonesia</h3>
+                        <p class="text-gray-600 mb-6 leading-relaxed">Find your paradise in the Island of Gods. Experience spiritual awakening in Ubud's rice terraces, practice yoga in serene retreats, and discover ancient temples. Bali offers a perfect blend of natural beauty, spiritual culture, and tropical relaxation that will rejuvenate your soul.</p>
+                        <div class="flex flex-wrap gap-3 mb-6">
+                            <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">Rice Terraces</span>
+                            <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">Yoga Retreats</span>
+                            <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">Temples</span>
+                            <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">Beaches</span>
+                        </div>
+                        <button class="btn-secondary px-6 py-3 text-white rounded-lg font-semibold">Find Peace in Bali</button>
+                    </div>
+                    <div class="order-1 lg:order-2">
+                        <img src="https://wallpaperaccess.com/full/441130.jpg" alt="Bali Rice Terraces" class="w-full h-96 object-cover rounded-2xl shadow-lg">
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- New York Section -->
+        <section id="newyork" class="py-20 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                    <div>
+                        <img src="https://wallpaperaccess.com/full/51785.jpg
+                        " alt="New York Skyline" class="w-full h-96 object-cover rounded-2xl shadow-lg">
+                    </div>
+                    <div class="destination-card bg-white p-8 rounded-2xl shadow-lg">
+                        <h3 class="font-display text-4xl font-bold text-gray-800 mb-4">New York City, USA</h3>
+                        <p class="text-gray-600 mb-6 leading-relaxed">Experience the city that never sleeps in all its vibrant energy. From the bright lights of Times Square to the tranquility of Central Park, New York offers an unparalleled urban adventure. Catch a Broadway show, explore diverse neighborhoods, and feel the pulse of American culture.</p>
+                        <div class="flex flex-wrap gap-3 mb-6">
+                            <span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm">Times Square</span>
+                            <span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm">Central Park</span>
+                            <span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm">Broadway</span>
+                            <span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm">Skyline</span>
+                        </div>
+                        <button class="btn-primary px-6 py-3 text-white rounded-lg font-semibold">Explore NYC</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- Next Page Button -->
+        <section class="py-16 bg-gradient-to-br from-blue-50 to-orange-50">
+            <div class="max-w-4xl mx-auto text-center">
+                <h3 class="font-display text-3xl font-bold text-gray-800 mb-6">Ready to Plan Your Trip?</h3>
+                <p class="text-xl text-gray-600 mb-8">Let's calculate the perfect itinerary for your dream vacation</p>
+                <button onclick="showPage('page-3')" class="btn-secondary px-8 py-4 text-white rounded-lg font-semibold text-lg">
+                    Plan Your Journey
+                </button>
+            </div>
+        </section>
+    </div>
+    <!-- Page 3: Trip Itinerary & Price Calculator -->
+    <div id="page-3" class="page-container">
+        <section class="py-20 bg-gradient-to-br from-blue-50 to-orange-50">
+            <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h2 class="font-display text-5xl font-bold gradient-text mb-6">Customize Your Journey</h2>
+                    <p class="text-xl text-gray-600 mb-8">Select your preferences and see your trip cost in real-time</p>
+                   
+                    <!-- Total Price Display -->
+                    <div class="bg-white rounded-2xl shadow-lg p-8 mb-8">
+                        <div class="text-center">
+                            <p class="text-gray-600 mb-2">Total Trip Cost</p>
+                            <div class="font-display text-6xl font-bold gradient-text" id="totalPrice">₹0</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Travel Options -->
+                    <div class="bg-white rounded-2xl shadow-lg p-6">
+                        <h3 class="font-display text-2xl font-bold text-gray-800 mb-6">Travel Options (Select One)</h3>
+                        <div class="space-y-4" id="travelOptionsContainer">
+                            <!-- Options will be dynamically generated -->
+                        </div>
+                    </div>
+                    <!-- Food Packages -->
+                    <div class="bg-white rounded-2xl shadow-lg p-6">
+                        <h3 class="font-display text-2xl font-bold text-gray-800 mb-6">Food Packages (Select Multiple)</h3>
+                        <div class="space-y-4">
+                            <div class="price-option border-2 border-gray-200 rounded-lg p-4" data-price="2999" data-category="food">
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <h4 class="font-semibold text-gray-800">Street Food Tour</h4>
+                                        <p class="text-sm text-gray-600">Local delicacies</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="font-bold text-lg text-orange-600">₹2,999</div>
+                                    </div>
+                                </div>
+                            </div>
+                           
+                            <div class="price-option border-2 border-gray-200 rounded-lg p-4" data-price="5499" data-category="food">
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <h4 class="font-semibold text-gray-800">Local Cuisine</h4>
+                                        <p class="text-sm text-gray-600">Authentic flavors</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="font-bold text-lg text-blue-600">₹5,499</div>
+                                    </div>
+                                </div>
+                            </div>
+                           
+                            <div class="price-option border-2 border-gray-200 rounded-lg p-4" data-price="8999" data-category="food">
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <h4 class="font-semibold text-gray-800">Vegetarian Special</h4>
+                                        <p class="text-sm text-gray-600">Plant-based meals</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="font-bold text-lg text-green-600">₹8,999</div>
+                                    </div>
+                                </div>
+                            </div>
+                           
+                            <div class="price-option border-2 border-gray-200 rounded-lg p-4" data-price="12499" data-category="food">
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <h4 class="font-semibold text-gray-800">International Dining</h4>
+                                        <p class="text-sm text-gray-600">Global tastes</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="font-bold text-lg text-purple-600">₹12,499</div>
+                                    </div>
+                                </div>
+                            </div>
+                           
+                            <div class="price-option border-2 border-gray-200 rounded-lg p-4" data-price="17499" data-category="food">
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <h4 class="font-semibold text-gray-800">Seafood Deluxe</h4>
+                                        <p class="text-sm text-gray-600">Ocean fresh</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="font-bold text-lg text-teal-600">₹17,499</div>
+                                    </div>
+                                </div>
+                            </div>
+                           
+                            <div class="price-option border-2 border-gray-200 rounded-lg p-4" data-price="24999" data-category="food">
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <h4 class="font-semibold text-gray-800">Gourmet Experience</h4>
+                                        <p class="text-sm text-gray-600">Michelin stars</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="font-bold text-lg text-pink-600">₹24,999</div>
+                                    </div>
+                                </div>
+                            </div>
+                           
+                            <div class="price-option border-2 border-gray-200 rounded-lg p-4" data-price="34999" data-category="food">
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <h4 class="font-semibold text-gray-800">Wine & Dine</h4>
+                                        <p class="text-sm text-gray-600">Premium pairing</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="font-bold text-lg text-red-600">₹34,999</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Activities -->
+                    <div class="bg-white rounded-2xl shadow-lg p-6">
+                        <h3 class="font-display text-2xl font-bold text-gray-800 mb-6">Activities (Select Multiple)</h3>
+                        <div class="space-y-4">
+                            <div class="price-option border-2 border-gray-200 rounded-lg p-4" data-price="1999" data-category="activities">
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <h4 class="font-semibold text-gray-800">City Sightseeing</h4>
+                                        <p class="text-sm text-gray-600">Must-see attractions</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="font-bold text-lg text-indigo-600">₹1,999</div>
+                                    </div>
+                                </div>
+                            </div>
+                           
+                            <div class="price-option border-2 border-gray-200 rounded-lg p-4" data-price="3499" data-category="activities">
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <h4 class="font-semibold text-gray-800">Museum Pass</h4>
+                                        <p class="text-sm text-gray-600">Cultural access</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="font-bold text-lg text-blue-600">₹3,499</div>
+                                    </div>
+                                </div>
+                            </div>
+                           
+                            <div class="price-option border-2 border-gray-200 rounded-lg p-4" data-price="5499" data-category="activities">
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <h4 class="font-semibold text-gray-800">Adventure Tours</h4>
+                                        <p class="text-sm text-gray-600">Thrilling experiences</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="font-bold text-lg text-orange-600">₹5,499</div>
+                                    </div>
+                                </div>
+                            </div>
+                           
+                            <div class="price-option border-2 border-gray-200 rounded-lg p-4" data-price="7499" data-category="activities">
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <h4 class="font-semibold text-gray-800">Water Sports</h4>
+                                        <p class="text-sm text-gray-600">Beach activities</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="font-bold text-lg text-green-600">₹7,499</div>
+                                    </div>
+                                </div>
+                            </div>
+                           
+                            <div class="price-option border-2 border-gray-200 rounded-lg p-4" data-price="6499" data-category="activities">
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <h4 class="font-semibold text-gray-800">Nightlife Experience</h4>
+                                        <p class="text-sm text-gray-600">Evening entertainment</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="font-bold text-lg text-purple-600">₹6,499</div>
+                                    </div>
+                                </div>
+                            </div>
+                           
+                            <div class="price-option border-2 border-gray-200 rounded-lg p-4" data-price="8999" data-category="activities">
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <h4 class="font-semibold text-gray-800">Cultural Experiences</h4>
+                                        <p class="text-sm text-gray-600">Deep immersion</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="font-bold text-lg text-pink-600">₹8,999</div>
+                                    </div>
+                                </div>
+                            </div>
+                           
+                            <div class="price-option border-2 border-gray-200 rounded-lg p-4" data-price="12499" data-category="activities">
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <h4 class="font-semibold text-gray-800">Spa & Wellness</h4>
+                                        <p class="text-sm text-gray-600">Relaxation & health</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="font-bold text-lg text-teal-600">₹12,499</div>
+                                    </div>
+                                </div>
+                            </div>
+                           
+                            <div class="price-option border-2 border-gray-200 rounded-lg p-4" data-price="5999" data-category="activities">
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <h4 class="font-semibold text-gray-800">Shopping Tour</h4>
+                                        <p class="text-sm text-gray-600">Retail therapy</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="font-bold text-lg text-red-600">₹5,999</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Price Breakdown Chart -->
+                <div class="mt-12">
+                    <div class="bg-white rounded-2xl shadow-lg p-8">
+                        <h3 class="font-display text-2xl font-bold text-gray-800 mb-6 text-center">Price Breakdown</h3>
+                        <div id="priceChart" style="width: 100%; height: 300px;"></div>
+                    </div>
+                </div>
+                <!-- Confirmation Button -->
+                <div class="text-center mt-12">
+                    <button onclick="confirmBooking()" class="btn-secondary px-12 py-4 text-white rounded-lg font-semibold text-lg">
+                        Confirm Your Journey
+                    </button>
+                </div>
+            </div>
+        </section>
+    </div>
+    <!-- Page 4: Confirmation / Thank You Page -->
+    <div id="page-4" class="page-container">
+        <!-- Confetti Container -->
+        <div class="confetti-container" id="confettiContainer"></div>
+       
+        <section class="min-h-screen flex items-center justify-center relative overflow-hidden">
+            <div class="floating-element absolute top-20 left-10 text-6xl opacity-10">🎉</div>
+            <div class="floating-element absolute top-40 right-20 text-4xl opacity-10" style="animation-delay: -2s;">✨</div>
+            <div class="floating-element absolute bottom-40 left-20 text-5xl opacity-10" style="animation-delay: -4s;">🎊</div>
+           
+            <div class="max-w-4xl mx-auto text-center px-4">
+                <div class="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-12">
+                    <div class="mb-8">
+                        <div class="text-8xl mb-6">🎉</div>
+                        <h2 class="font-display text-5xl font-bold gradient-text mb-6" id="thankYouText">Congratulations!</h2>
+                        <p class="text-xl text-gray-600 mb-8">Your journey with VoyageFlow has been successfully planned</p>
+                    </div>
+                   
+                    <!-- Booking Summary -->
+                    <div class="bg-gradient-to-br from-blue-50 to-orange-50 rounded-2xl p-8 mb-8">
+                        <h3 class="font-display text-2xl font-bold text-gray-800 mb-6">Your Journey Summary</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
+                            <div>
+                                <h4 class="font-semibold text-gray-700 mb-2">Selected Options:</h4>
+                                <div id="selectedOptions" class="text-gray-600 space-y-1">
+                                    <!-- Will be populated by JavaScript -->
+                                </div>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-700 mb-2">Total Investment:</h4>
+                                <div class="font-display text-3xl font-bold gradient-text" id="finalTotal">₹0</div>
+                            </div>
+                        </div>
+                    </div>
+                   
+                    <!-- Social Share Buttons -->
+                    <div class="mb-8">
+                        <h4 class="font-semibold text-gray-700 mb-4">Share Your Excitement:</h4>
+                        <div class="flex justify-center space-x-4">
+                            <button class="bg-pink-600 text-white px-4 py-2 rounded-lg hover:bg-pink-700 transition-colors">Instagram</button>
+                        </div>
+                    </div>
+                   
+                    <!-- Next Steps -->
+                    <div class="mb-8">
+                        <h4 class="font-semibold text-gray-700 mb-4">What's Next?</h4>
+                        <div class="text-gray-600 space-y-2">
+                            <p>📧 You'll receive a detailed itinerary via email</p>
+                        </div>
+                    </div>
+                   
+                    <!-- Start Over Button -->
+                    <button onclick="startOver()" class="btn-primary px-8 py-4 text-white rounded-lg font-semibold text-lg">
+                        Start a New Adventure
+                    </button>
+                </div>
+            </div>
+        </section>
+    </div>
+    <!-- Success Modal -->
+    <div id="successModal" class="modal fixed inset-0 flex items-center justify-center z-50 hidden">
+        <div class="modal-content bg-white rounded-2xl shadow-2xl p-8 max-w-md mx-4">
+            <div class="text-center">
+                <div class="text-6xl mb-4">✅</div>
+                <h3 class="font-display text-2xl font-bold text-gray-800 mb-4">Registration Successful!</h3>
+                <p class="text-gray-600 mb-6">Welcome to VoyageFlow! Redirecting you to explore amazing destinations...</p>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div class="bg-blue-600 h-2 rounded-full transition-all duration-2000" id="progressBar" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Confirmation Modal -->
+    <div id="confirmationModal" class="modal fixed inset-0 flex items-center justify-center z-50 hidden">
+        <div class="modal-content bg-white rounded-2xl shadow-2xl p-8 max-w-lg mx-4">
+            <div class="text-center">
+                <div class="text-6xl mb-4">✈</div>
+                <h3 class="font-display text-2xl font-bold text-gray-800 mb-4">Confirm Your Journey?</h3>
+                <p class="text-gray-600 mb-6">You're about to embark on an amazing adventure. Review your selections and confirm your booking.</p>
+                <div class="flex justify-center space-x-4">
+                    <button onclick="closeConfirmationModal()" class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">Cancel</button>
+                    <button onclick="proceedToConfirmation()" class="btn-secondary px-6 py-3 text-white rounded-lg">Confirm & Proceed</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- City Details Modal -->
+    <div id="cityDetailsModal" class="modal fixed inset-0 flex items-center justify-center z-50 hidden">
+        <div class="modal-content bg-white rounded-2xl shadow-2xl max-w-4xl mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="p-8">
+                <div class="flex justify-between items-start mb-6">
+                    <h3 class="font-display text-3xl font-bold gradient-text" id="cityDetailsTitle"></h3>
+                    <button onclick="closeCityDetailsModal()" class="text-gray-500 hover:text-gray-700 text-2xl font-bold">&times;</button>
+                </div>
+                <div id="cityDetailsContent"></div>
+            </div>
+        </div>
+    </div>
+    <script src="main.js"></script>
+</body>
+</html>
