@@ -146,7 +146,7 @@
             box-shadow: 0 8px 25px rgba(30, 58, 138, 0.3);
         }
        
-        /* NEW: Checkbox indicator for multi-select - ENHANCED VISIBILITY */
+        /* Checkbox indicator for multi-select - ENHANCED VISIBILITY */
         .price-option[data-category="food"]::before,
         .price-option[data-category="activities"]::before {
             content: '☐';
@@ -158,7 +158,7 @@
             color: var(--neutral);
             transition: all 0.3s ease;
             font-weight: bold;
-            pointer-events: none; /* Prevent checkbox from blocking clicks */
+            pointer-events: none;
         }
        
         .price-option[data-category="food"].selected::before,
@@ -291,6 +291,74 @@
             opacity: 1;
             transform: translateY(0);
         }
+
+        /* Currency selector styles */
+        .currency-selector {
+            transition: all 0.3s ease;
+            border: 2px solid var(--primary);
+        }
+        
+        .currency-selector:focus {
+            box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+        }
+
+        /* Enhanced price breakdown animations */
+        .price-breakdown-container {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .price-item {
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+        
+        .price-item.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        .price-item:hover {
+            background: rgba(30, 58, 138, 0.05);
+            transform: translateX(5px);
+        }
+
+        /* Interactive chart container */
+        #priceChart {
+            transition: all 0.4s ease;
+        }
+        
+        #priceChart:hover {
+            transform: scale(1.02);
+        }
+
+        /* Destination filter functionality */
+        #navLinks.india-mode a[href="#paris"],
+        #navLinks.india-mode a[href="#tokyo"],
+        #navLinks.india-mode a[href="#rome"],
+        #navLinks.india-mode a[href="#bali"],
+        #navLinks.india-mode a[href="#newyork"] {
+            display: none;
+        }
+        
+        #navLinks a[href="#jaipur"],
+        #navLinks a[href="#kerala"],
+        #navLinks a[href="#goa"],
+        #navLinks a[href="#udaipur"],
+        #navLinks a[href="#leh"],
+        #navLinks a[href="#amritsar"] {
+            display: none;
+        }
+        
+        #navLinks.india-mode a[href="#jaipur"],
+        #navLinks.india-mode a[href="#kerala"],
+        #navLinks.india-mode a[href="#goa"],
+        #navLinks.india-mode a[href="#udaipur"],
+        #navLinks.india-mode a[href="#leh"],
+        #navLinks.india-mode a[href="#amritsar"] {
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -298,6 +366,7 @@
     <div class="scroll-indicator">
         <div class="scroll-progress" id="scrollProgress"></div>
     </div>
+    
     <!-- Navigation -->
     <nav class="glass-nav sticky-nav" id="mainNav">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -316,6 +385,7 @@
             </div>
         </div>
     </nav>
+
     <!-- Page 1: User Registration Form -->
     <div id="page-1" class="page-container active">
         <section class="hero-bg min-h-screen flex items-center justify-center relative overflow-hidden">
@@ -365,6 +435,7 @@
             </div>
         </section>
     </div>
+
     <!-- Page 2: Travel Blog & Destination Showcase -->
     <div id="page-2" class="page-container">
         <!-- Sticky Navigation -->
@@ -376,19 +447,34 @@
                     <a href="#rome" class="nav-link text-sm font-medium text-gray-700 hover:text-blue-600">Rome</a>
                     <a href="#bali" class="nav-link text-sm font-medium text-gray-700 hover:text-blue-600">Bali</a>
                     <a href="#newyork" class="nav-link text-sm font-medium text-gray-700 hover:text-blue-600">New York</a>
+                    <!-- Indian destination navigation links -->
+                    <a href="#jaipur" class="nav-link text-sm font-medium text-gray-700 hover:text-blue-600">Jaipur</a>
+                    <a href="#kerala" class="nav-link text-sm font-medium text-gray-700 hover:text-blue-600">Kerala</a>
+                    <a href="#goa" class="nav-link text-sm font-medium text-gray-700 hover:text-blue-600">Goa</a>
+                    <a href="#udaipur" class="nav-link text-sm font-medium text-gray-700 hover:text-blue-600">Udaipur</a>
+                    <a href="#leh" class="nav-link text-sm font-medium text-gray-700 hover:text-blue-600">Leh</a>
+                    <a href="#amritsar" class="nav-link text-sm font-medium text-gray-700 hover:text-blue-600">Amritsar</a>
                 </div>
             </div>
         </div>
+
         <!-- Hero Section -->
         <section class="py-20 bg-gradient-to-br from-blue-50 to-orange-50">
             <div class="max-w-4xl mx-auto text-center px-4">
                 <h2 class="font-display text-5xl font-bold gradient-text mb-6">Discover Amazing Destinations</h2>
                 <p class="text-xl text-gray-600 mb-8">Explore the world's most captivating cities and create unforgettable memories</p>
+                
+                <!-- Destination filter buttons -->
+                <div class="mt-8 flex justify-center space-x-4">
+                    <button id="filterIndia" class="px-6 py-2 rounded-full bg-blue-600 text-white font-semibold transition-all transform hover:scale-105">In India</button>
+                    <button id="filterInternational" class="px-6 py-2 rounded-full bg-gray-200 text-gray-700 font-semibold transition-all transform hover:scale-105">🌍 Out of India</button>
+                </div>
                 <div class="w-32 h-1 bg-gradient-to-r from-blue-600 to-orange-500 mx-auto rounded-full"></div>
             </div>
         </section>
+
         <!-- Paris Section -->
-        <section id="paris" class="py-20 bg-white">
+        <section id="paris" class="py-20 bg-white destination-section" data-category="international">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                     <div>
@@ -408,8 +494,9 @@
                 </div>
             </div>
         </section>
+
         <!-- Tokyo Section -->
-        <section id="tokyo" class="py-20 bg-gray-50">
+        <section id="tokyo" class="py-20 bg-gray-50 destination-section" data-category="international">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                     <div class="destination-card bg-white p-8 rounded-2xl shadow-lg order-2 lg:order-1">
@@ -429,8 +516,9 @@
                 </div>
             </div>
         </section>
+
         <!-- Rome Section -->
-        <section id="rome" class="py-20 bg-white">
+        <section id="rome" class="py-20 bg-white destination-section" data-category="international">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                     <div>
@@ -450,8 +538,9 @@
                 </div>
             </div>
         </section>
+
         <!-- Bali Section -->
-        <section id="bali" class="py-20 bg-gray-50">
+        <section id="bali" class="py-20 bg-gray-50 destination-section" data-category="international">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                     <div class="destination-card bg-white p-8 rounded-2xl shadow-lg order-2 lg:order-1">
@@ -471,13 +560,13 @@
                 </div>
             </div>
         </section>
+
         <!-- New York Section -->
-        <section id="newyork" class="py-20 bg-white">
+        <section id="newyork" class="py-20 bg-white destination-section" data-category="international">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                     <div>
-                        <img src="https://wallpaperaccess.com/full/51785.jpg
-                        " alt="New York Skyline" class="w-full h-96 object-cover rounded-2xl shadow-lg">
+                        <img src="https://wallpaperaccess.com/full/51785.jpg" alt="New York Skyline" class="w-full h-96 object-cover rounded-2xl shadow-lg">
                     </div>
                     <div class="destination-card bg-white p-8 rounded-2xl shadow-lg">
                         <h3 class="font-display text-4xl font-bold text-gray-800 mb-4">New York City, USA</h3>
@@ -493,6 +582,139 @@
                 </div>
             </div>
         </section>
+
+        <!-- Jaipur Section -->
+        <section id="jaipur" class="py-20 bg-white destination-section" data-category="india">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                    <div>
+                        <img src="https://wallpaperaccess.com/full/900997.jpg" alt="Jaipur Pink City" class="w-full h-96 object-cover rounded-2xl shadow-lg">
+                    </div>
+                    <div class="destination-card bg-white p-8 rounded-2xl shadow-lg">
+                        <h3 class="font-display text-4xl font-bold text-gray-800 mb-4">Jaipur, Rajasthan</h3>
+                        <p class="text-gray-600 mb-6 leading-relaxed">Experience the royal heritage of Rajasthan in the Pink City. Explore magnificent forts, palaces, and vibrant bazaars. Jaipur offers a perfect blend of history, architecture, and culture that transports you to the era of Maharajas.</p>
+                        <div class="flex flex-wrap gap-3 mb-6">
+                            <span class="px-3 py-1 bg-pink-100 text-pink-800 rounded-full text-sm">Amber Fort</span>
+                            <span class="px-3 py-1 bg-pink-100 text-pink-800 rounded-full text-sm">Hawa Mahal</span>
+                            <span class="px-3 py-1 bg-pink-100 text-pink-800 rounded-full text-sm">City Palace</span>
+                            <span class="px-3 py-1 bg-pink-100 text-pink-800 rounded-full text-sm">Rajasthani Cuisine</span>
+                        </div>
+                        <button class="btn-primary px-6 py-3 text-white rounded-lg font-semibold">Discover Jaipur</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Kerala Section -->
+        <section id="kerala" class="py-20 bg-gray-50 destination-section" data-category="india">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                    <div class="destination-card bg-white p-8 rounded-2xl shadow-lg order-2 lg:order-1">
+                        <h3 class="font-display text-4xl font-bold text-gray-800 mb-4">Kerala - God's Own Country</h3>
+                        <p class="text-gray-600 mb-6 leading-relaxed">Discover tranquility in God's Own Country. Cruise through serene backwaters, experience Ayurvedic wellness, and enjoy lush green landscapes. Kerala offers a rejuvenating tropical escape with its unique culture and natural beauty.</p>
+                        <div class="flex flex-wrap gap-3 mb-6">
+                            <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">Backwaters</span>
+                            <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">Houseboats</span>
+                            <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">Ayurveda</span>
+                            <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">Tea Plantations</span>
+                        </div>
+                        <button class="btn-secondary px-6 py-3 text-white rounded-lg font-semibold">Explore Kerala</button>
+                    </div>
+                    <div class="order-1 lg:order-2">
+                        <img src="https://wallpaperaccess.com/full/1635200.jpg" alt="Kerala Backwaters" class="w-full h-96 object-cover rounded-2xl shadow-lg">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Goa Section -->
+        <section id="goa" class="py-20 bg-white destination-section" data-category="india">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                    <div>
+                        <img src="https://wallpaperaccess.com/full/1315403.jpg" alt="Goa Beach" class="w-full h-96 object-cover rounded-2xl shadow-lg">
+                    </div>
+                    <div class="destination-card bg-white p-8 rounded-2xl shadow-lg">
+                        <h3 class="font-display text-4xl font-bold text-gray-800 mb-4">Goa - Beach Paradise</h3>
+                        <p class="text-gray-600 mb-6 leading-relaxed">Find your bliss in Goa's sun-kissed beaches and vibrant nightlife. From Portuguese heritage to seafood delights, Goa offers the perfect coastal getaway with a unique blend of Indian and European cultures.</p>
+                        <div class="flex flex-wrap gap-3 mb-6">
+                            <span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm">Beaches</span>
+                            <span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm">Nightlife</span>
+                            <span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm">Churches</span>
+                            <span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm">Seafood</span>
+                        </div>
+                        <button class="btn-primary px-6 py-3 text-white rounded-lg font-semibold">Experience Goa</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Udaipur Section -->
+        <section id="udaipur" class="py-20 bg-gray-50 destination-section" data-category="india">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                    <div class="destination-card bg-white p-8 rounded-2xl shadow-lg order-2 lg:order-1">
+                        <h3 class="font-display text-4xl font-bold text-gray-800 mb-4">Udaipur - City of Lakes</h3>
+                        <p class="text-gray-600 mb-6 leading-relaxed">Fall in love with the romantic City of Lakes. With its stunning palaces, tranquil lakes, and royal charm, Udaipur is a dream destination for every traveler seeking beauty and serenity.</p>
+                        <div class="flex flex-wrap gap-3 mb-6">
+                            <span class="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">Lake Pichola</span>
+                            <span class="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">City Palace</span>
+                            <span class="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">Boat Ride</span>
+                            <span class="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">Sunset Views</span>
+                        </div>
+                        <button class="btn-secondary px-6 py-3 text-white rounded-lg font-semibold">Visit Udaipur</button>
+                    </div>
+                    <div class="order-1 lg:order-2">
+                        <img src="https://wallpaperaccess.com/full/6373648.jpg" alt="Udaipur City Palace" class="w-full h-96 object-cover rounded-2xl shadow-lg">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Leh Section -->
+        <section id="leh" class="py-20 bg-white destination-section" data-category="india">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                    <div>
+                        <img src="https://wallpaperaccess.com/full/1398614.jpg" alt="Leh Ladakh" class="w-full h-96 object-cover rounded-2xl shadow-lg">
+                    </div>
+                    <div class="destination-card bg-white p-8 rounded-2xl shadow-lg">
+                        <h3 class="font-display text-4xl font-bold text-gray-800 mb-4">Leh - Himalayan Adventure</h3>
+                        <p class="text-gray-600 mb-6 leading-relaxed">Conquer the Himalayas in Leh-Ladakh. Experience dramatic landscapes, Buddhist monasteries, and thrilling adventures at one of the highest inhabited places on Earth.</p>
+                        <div class="flex flex-wrap gap-3 mb-6">
+                            <span class="px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-sm">Monasteries</span>
+                            <span class="px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-sm">Pangong Lake</span>
+                            <span class="px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-sm">High Passes</span>
+                            <span class="px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-sm">Adventure</span>
+                        </div>
+                        <button class="btn-primary px-6 py-3 text-white rounded-lg font-semibold">Trek Leh</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Amritsar Section -->
+        <section id="amritsar" class="py-20 bg-gray-50 destination-section" data-category="india">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                    <div class="destination-card bg-white p-8 rounded-2xl shadow-lg order-2 lg:order-1">
+                        <h3 class="font-display text-4xl font-bold text-gray-800 mb-4">Amritsar - Spiritual Journey</h3>
+                        <p class="text-gray-600 mb-6 leading-relaxed">Experience spiritual bliss in Amritsar. Visit the Golden Temple, witness the Wagah Border ceremony, and savor authentic Punjabi cuisine in this sacred city that embodies the heart of Sikh culture.</p>
+                        <div class="flex flex-wrap gap-3 mb-6">
+                            <span class="px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-sm">Golden Temple</span>
+                            <span class="px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-sm">Wagah Border</span>
+                            <span class="px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-sm">Langar</span>
+                            <span class="px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-sm">Punjabi Food</span>
+                        </div>
+                        <button class="btn-secondary px-6 py-3 text-white rounded-lg font-semibold">Feel Amritsar</button>
+                    </div>
+                    <div class="order-1 lg:order-2">
+                        <img src="https://imgs.search.brave.com/v8P2DQ57XU7v2VNE0a7w-03Za9A3gZ4XDN48nbyD51Y/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly90NC5m/dGNkbi5uZXQvanBn/LzA2LzQyLzAwLzk1/LzM2MF9GXzY0MjAw/OTU1MF9SaWx1aDQx/OVNSRTdlTUEyU01t/QU9OTll3eFAxMHB6/Zi5qcGc" alt="Amritsar Golden Temple" class="w-full h-96 object-cover rounded-2xl shadow-lg">
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- Next Page Button -->
         <section class="py-16 bg-gradient-to-br from-blue-50 to-orange-50">
             <div class="max-w-4xl mx-auto text-center">
@@ -504,6 +726,7 @@
             </div>
         </section>
     </div>
+
     <!-- Page 3: Trip Itinerary & Price Calculator -->
     <div id="page-3" class="page-container">
         <section class="py-20 bg-gradient-to-br from-blue-50 to-orange-50">
@@ -519,7 +742,20 @@
                             <div class="font-display text-6xl font-bold gradient-text" id="totalPrice">₹0</div>
                         </div>
                     </div>
+
+                    <!-- Currency Selector for International Destinations -->
+                    <div id="currencySelectorContainer" class="text-center mb-8 hidden">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Display Currency</label>
+                        <select id="currencySelector" class="currency-selector px-4 py-2 rounded-lg bg-white text-gray-800 font-semibold">
+                            <option value="INR">₹ INR (Indian Rupee)</option>
+                            <option value="EUR">€ EUR (Euro)</option>
+                            <option value="USD">$ USD (US Dollar)</option>
+                            <option value="JPY">¥ JPY (Japanese Yen)</option>
+                            <option value="IDR">Rp IDR (Indonesian Rupiah)</option>
+                        </select>
+                    </div>
                 </div>
+                
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <!-- Travel Options -->
                     <div class="bg-white rounded-2xl shadow-lg p-6">
@@ -528,204 +764,40 @@
                             <!-- Options will be dynamically generated -->
                         </div>
                     </div>
+
                     <!-- Food Packages -->
                     <div class="bg-white rounded-2xl shadow-lg p-6">
                         <h3 class="font-display text-2xl font-bold text-gray-800 mb-6">Food Packages (Select Multiple)</h3>
-                        <div class="space-y-4">
-                            <div class="price-option border-2 border-gray-200 rounded-lg p-4" data-price="2999" data-category="food">
-                                <div class="flex justify-between items-center">
-                                    <div>
-                                        <h4 class="font-semibold text-gray-800">Street Food Tour</h4>
-                                        <p class="text-sm text-gray-600">Local delicacies</p>
-                                    </div>
-                                    <div class="text-right">
-                                        <div class="font-bold text-lg text-orange-600">₹2,999</div>
-                                    </div>
-                                </div>
-                            </div>
-                           
-                            <div class="price-option border-2 border-gray-200 rounded-lg p-4" data-price="5499" data-category="food">
-                                <div class="flex justify-between items-center">
-                                    <div>
-                                        <h4 class="font-semibold text-gray-800">Local Cuisine</h4>
-                                        <p class="text-sm text-gray-600">Authentic flavors</p>
-                                    </div>
-                                    <div class="text-right">
-                                        <div class="font-bold text-lg text-blue-600">₹5,499</div>
-                                    </div>
-                                </div>
-                            </div>
-                           
-                            <div class="price-option border-2 border-gray-200 rounded-lg p-4" data-price="8999" data-category="food">
-                                <div class="flex justify-between items-center">
-                                    <div>
-                                        <h4 class="font-semibold text-gray-800">Vegetarian Special</h4>
-                                        <p class="text-sm text-gray-600">Plant-based meals</p>
-                                    </div>
-                                    <div class="text-right">
-                                        <div class="font-bold text-lg text-green-600">₹8,999</div>
-                                    </div>
-                                </div>
-                            </div>
-                           
-                            <div class="price-option border-2 border-gray-200 rounded-lg p-4" data-price="12499" data-category="food">
-                                <div class="flex justify-between items-center">
-                                    <div>
-                                        <h4 class="font-semibold text-gray-800">International Dining</h4>
-                                        <p class="text-sm text-gray-600">Global tastes</p>
-                                    </div>
-                                    <div class="text-right">
-                                        <div class="font-bold text-lg text-purple-600">₹12,499</div>
-                                    </div>
-                                </div>
-                            </div>
-                           
-                            <div class="price-option border-2 border-gray-200 rounded-lg p-4" data-price="17499" data-category="food">
-                                <div class="flex justify-between items-center">
-                                    <div>
-                                        <h4 class="font-semibold text-gray-800">Seafood Deluxe</h4>
-                                        <p class="text-sm text-gray-600">Ocean fresh</p>
-                                    </div>
-                                    <div class="text-right">
-                                        <div class="font-bold text-lg text-teal-600">₹17,499</div>
-                                    </div>
-                                </div>
-                            </div>
-                           
-                            <div class="price-option border-2 border-gray-200 rounded-lg p-4" data-price="24999" data-category="food">
-                                <div class="flex justify-between items-center">
-                                    <div>
-                                        <h4 class="font-semibold text-gray-800">Gourmet Experience</h4>
-                                        <p class="text-sm text-gray-600">Michelin stars</p>
-                                    </div>
-                                    <div class="text-right">
-                                        <div class="font-bold text-lg text-pink-600">₹24,999</div>
-                                    </div>
-                                </div>
-                            </div>
-                           
-                            <div class="price-option border-2 border-gray-200 rounded-lg p-4" data-price="34999" data-category="food">
-                                <div class="flex justify-between items-center">
-                                    <div>
-                                        <h4 class="font-semibold text-gray-800">Wine & Dine</h4>
-                                        <p class="text-sm text-gray-600">Premium pairing</p>
-                                    </div>
-                                    <div class="text-right">
-                                        <div class="font-bold text-lg text-red-600">₹34,999</div>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="space-y-4" id="foodOptionsContainer">
+                            <!-- Options will be dynamically generated -->
                         </div>
                     </div>
+
                     <!-- Activities -->
                     <div class="bg-white rounded-2xl shadow-lg p-6">
                         <h3 class="font-display text-2xl font-bold text-gray-800 mb-6">Activities (Select Multiple)</h3>
-                        <div class="space-y-4">
-                            <div class="price-option border-2 border-gray-200 rounded-lg p-4" data-price="1999" data-category="activities">
-                                <div class="flex justify-between items-center">
-                                    <div>
-                                        <h4 class="font-semibold text-gray-800">City Sightseeing</h4>
-                                        <p class="text-sm text-gray-600">Must-see attractions</p>
-                                    </div>
-                                    <div class="text-right">
-                                        <div class="font-bold text-lg text-indigo-600">₹1,999</div>
-                                    </div>
-                                </div>
+                        <div class="space-y-4" id="activityOptionsContainer">
+                            <!-- Options will be dynamically generated -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Enhanced Price Breakdown Section -->
+                <div class="mt-12">
+                    <div class="bg-white rounded-2xl shadow-lg p-8 price-breakdown-container">
+                        <h3 class="font-display text-2xl font-bold text-gray-800 mb-6 text-center">Interactive Price Breakdown</h3>
+                        <div id="priceBreakdownContent" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <!-- Chart will be on left, details on right -->
+                            <div class="relative">
+                                <div id="priceChart" style="width: 100%; height: 350px;"></div>
                             </div>
-                           
-                            <div class="price-option border-2 border-gray-200 rounded-lg p-4" data-price="3499" data-category="activities">
-                                <div class="flex justify-between items-center">
-                                    <div>
-                                        <h4 class="font-semibold text-gray-800">Museum Pass</h4>
-                                        <p class="text-sm text-gray-600">Cultural access</p>
-                                    </div>
-                                    <div class="text-right">
-                                        <div class="font-bold text-lg text-blue-600">₹3,499</div>
-                                    </div>
-                                </div>
-                            </div>
-                           
-                            <div class="price-option border-2 border-gray-200 rounded-lg p-4" data-price="5499" data-category="activities">
-                                <div class="flex justify-between items-center">
-                                    <div>
-                                        <h4 class="font-semibold text-gray-800">Adventure Tours</h4>
-                                        <p class="text-sm text-gray-600">Thrilling experiences</p>
-                                    </div>
-                                    <div class="text-right">
-                                        <div class="font-bold text-lg text-orange-600">₹5,499</div>
-                                    </div>
-                                </div>
-                            </div>
-                           
-                            <div class="price-option border-2 border-gray-200 rounded-lg p-4" data-price="7499" data-category="activities">
-                                <div class="flex justify-between items-center">
-                                    <div>
-                                        <h4 class="font-semibold text-gray-800">Water Sports</h4>
-                                        <p class="text-sm text-gray-600">Beach activities</p>
-                                    </div>
-                                    <div class="text-right">
-                                        <div class="font-bold text-lg text-green-600">₹7,499</div>
-                                    </div>
-                                </div>
-                            </div>
-                           
-                            <div class="price-option border-2 border-gray-200 rounded-lg p-4" data-price="6499" data-category="activities">
-                                <div class="flex justify-between items-center">
-                                    <div>
-                                        <h4 class="font-semibold text-gray-800">Nightlife Experience</h4>
-                                        <p class="text-sm text-gray-600">Evening entertainment</p>
-                                    </div>
-                                    <div class="text-right">
-                                        <div class="font-bold text-lg text-purple-600">₹6,499</div>
-                                    </div>
-                                </div>
-                            </div>
-                           
-                            <div class="price-option border-2 border-gray-200 rounded-lg p-4" data-price="8999" data-category="activities">
-                                <div class="flex justify-between items-center">
-                                    <div>
-                                        <h4 class="font-semibold text-gray-800">Cultural Experiences</h4>
-                                        <p class="text-sm text-gray-600">Deep immersion</p>
-                                    </div>
-                                    <div class="text-right">
-                                        <div class="font-bold text-lg text-pink-600">₹8,999</div>
-                                    </div>
-                                </div>
-                            </div>
-                           
-                            <div class="price-option border-2 border-gray-200 rounded-lg p-4" data-price="12499" data-category="activities">
-                                <div class="flex justify-between items-center">
-                                    <div>
-                                        <h4 class="font-semibold text-gray-800">Spa & Wellness</h4>
-                                        <p class="text-sm text-gray-600">Relaxation & health</p>
-                                    </div>
-                                    <div class="text-right">
-                                        <div class="font-bold text-lg text-teal-600">₹12,499</div>
-                                    </div>
-                                </div>
-                            </div>
-                           
-                            <div class="price-option border-2 border-gray-200 rounded-lg p-4" data-price="5999" data-category="activities">
-                                <div class="flex justify-between items-center">
-                                    <div>
-                                        <h4 class="font-semibold text-gray-800">Shopping Tour</h4>
-                                        <p class="text-sm text-gray-600">Retail therapy</p>
-                                    </div>
-                                    <div class="text-right">
-                                        <div class="font-bold text-lg text-red-600">₹5,999</div>
-                                    </div>
-                                </div>
+                            <div id="priceDetailsList" class="space-y-3 max-h-80 overflow-y-auto">
+                                <!-- Price details will be populated dynamically -->
                             </div>
                         </div>
                     </div>
                 </div>
-                <!-- Price Breakdown Chart -->
-                <div class="mt-12">
-                    <div class="bg-white rounded-2xl shadow-lg p-8">
-                        <h3 class="font-display text-2xl font-bold text-gray-800 mb-6 text-center">Price Breakdown</h3>
-                        <div id="priceChart" style="width: 100%; height: 300px;"></div>
-                    </div>
-                </div>
+                
                 <!-- Confirmation Button -->
                 <div class="text-center mt-12">
                     <button onclick="confirmBooking()" class="btn-secondary px-12 py-4 text-white rounded-lg font-semibold text-lg">
@@ -735,6 +807,7 @@
             </div>
         </section>
     </div>
+
     <!-- Page 4: Confirmation / Thank You Page -->
     <div id="page-4" class="page-container">
         <!-- Confetti Container -->
@@ -794,6 +867,7 @@
             </div>
         </section>
     </div>
+
     <!-- Success Modal -->
     <div id="successModal" class="modal fixed inset-0 flex items-center justify-center z-50 hidden">
         <div class="modal-content bg-white rounded-2xl shadow-2xl p-8 max-w-md mx-4">
@@ -807,6 +881,7 @@
             </div>
         </div>
     </div>
+
     <!-- Confirmation Modal -->
     <div id="confirmationModal" class="modal fixed inset-0 flex items-center justify-center z-50 hidden">
         <div class="modal-content bg-white rounded-2xl shadow-2xl p-8 max-w-lg mx-4">
@@ -821,6 +896,7 @@
             </div>
         </div>
     </div>
+
     <!-- City Details Modal -->
     <div id="cityDetailsModal" class="modal fixed inset-0 flex items-center justify-center z-50 hidden">
         <div class="modal-content bg-white rounded-2xl shadow-2xl max-w-4xl mx-4 max-h-[90vh] overflow-y-auto">
@@ -833,6 +909,7 @@
             </div>
         </div>
     </div>
+
     <script src="main.js"></script>
 </body>
 </html>
